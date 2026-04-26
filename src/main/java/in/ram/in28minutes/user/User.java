@@ -2,15 +2,22 @@ package in.ram.in28minutes.user;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
 public class User {
 
+	@JsonProperty("employee_id")
     private Integer id;
+    
     @Size(min = 2, message = "Name should have atleast 2 characters")
+    @JsonProperty("user_name")
     private String name;
+    
     @Past(message = "Birth date should be in the past")
+    @JsonProperty("birth_date")
     private LocalDate birthDate;
 
     public User(Integer id, String name, LocalDate birthDate) {

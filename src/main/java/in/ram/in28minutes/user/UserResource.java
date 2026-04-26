@@ -3,7 +3,10 @@ package in.ram.in28minutes.user;
 import java.net.URI;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,38 +21,48 @@ import jakarta.validation.Valid;
 @RestController
 public class UserResource {
 
-    @Autowired
-    private UserDaoService daoService;
+	private UserDaoService daoService;
 
-    // public UserResource(UserDaoService daoService) {
-    // this.daoService = daoService;
-    // }
+	public UserResource(UserDaoService daoService) {
+		this.daoService = daoService;
+	}
 
-    @GetMapping("/users")
-    public List<User> getUsers() {
-        return daoService.findAll();
-    }
+	@GetMapping("/users")
+	public List<User> getUsers() {
+		return daoService.findAll();
+	}
 
-    @GetMapping("/users/{id}")
-    public User getUsersByid(@PathVariable Integer id) {
-        User user = daoService.findById(id);
+	// http://localhost:9090/users
 
-        if (user == null)
-            throw new UserNotFoundException("id:" + id);
-        return user;
-    }
+	// EntityModel
+	// WebMvcLinkBuilder
 
-    @DeleteMapping("/users/{id}")
-    public void deleteUsersByid(@PathVariable Integer id) {
-        daoService.deleteById(id);
-    }
+	@GetMapping("/users/{id}")
+	public EntityModel<User> getUsersByid(@PathVariable Integer id) {
+		User user = daoService.findById(id);
 
-    @PostMapping("/users")
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        User savedUser = daoService.save(user);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedUser.getId())
-                .toUri();
-        return ResponseEntity.created(location).build();
-    }
+		if (user == null)
+			throw new UserNotFoundException("id:" + id);
+
+		EntityModel<User> entityModel = EntityModel.of(user);
+
+		WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).getUsers());
+		entityModel.add(link.withRel("all-users"));
+
+		return entityModel;
+	}
+
+	@DeleteMapping("/users/{id}")
+	public void deleteUsersByid(@PathVariable Integer id) {
+		daoService.deleteById(id);
+	}
+
+	@PostMapping("/users")
+	public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+		User savedUser = daoService.save(user);
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedUser.getId())
+				.toUri();
+		return ResponseEntity.created(location).build();
+	}
 
 }
