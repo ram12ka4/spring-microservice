@@ -22,7 +22,5 @@ public class VersioningPersonSbiController {
 	 * getSecondVersionOfPersonRequestParameter() { return new PersonV2(new
 	 * Name("Ram", "Kumar", "Basak")); }
 	 */
-	
- 
 
 }
